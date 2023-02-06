@@ -5,9 +5,9 @@ const cntx = canvas.getContext('2d')
 canvas.width = 1024
 canvas.height = 576
 
-const baseRoomColMap = []
+const room0ColMap = []
 for (let i = 0; i < baseRoomCol.length; i += 30) {
-    baseRoomColMap.push(baseRoomCol.slice(i, 30 + i))
+    room0ColMap.push(baseRoomCol.slice(i, 30 + i))
 }
 
 class Collision {
@@ -32,7 +32,7 @@ const imgOffset = {
 }
 
 //BASE ROOM BOUNDARIES
-baseRoomColMap.forEach((row, i) => {
+room0ColMap.forEach((row, i) => {
     row.forEach((symbol, j) => {
         if (symbol === 145)
             mapCols0.push(
@@ -120,127 +120,45 @@ const movements = [
     ...mapCols0
 ]
 
-function pcollision({ pcol: charCol, col: worldCol }) {
+function collide ({ charCol, worldCol }) {
     return (
-        charCol.position.x + charCol.width >= worldCol.position.x &&
-        charCol.position.x <= worldCol.position.x + worldCol.width &&
-        charCol.position.y <= worldCol.position.y + worldCol.height &&
-        charCol.position.y + charCol.height >= worldCol.position.y
+        rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
+        rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
+        rectangle1.position.y <= rectangle2.position.y + rectangle2.height &&
+        rectangle1.position.y + rectangle1.height >= rectangle2.position.y
     )
 }
 
 //animate sprite movement
 function animate() {
-    window.requestAnimationFrame(animate)
-    background.draw()
-    mapCols0.forEach((mapCol0) => {
-        mapCol0.draw()  
-    })
+   window.requestAnimationFrame(animate)
+   background.draw()
+   mapCols0.forEach((mapCol0) => {
+   mapCol0.draw()
+   })
 
-    mainChar.draw()
+   mainChar.draw()
 
-    //movement 
-    let moving = true
-    if (keys.w.pressed && lastKey === 'w') {
-        for (let i = 0; i < mapCols0.length; i++) {
-            const mapCol0 = mapCols0[i]
-            if (
-                pcollision({
-                    charCol: mainChar,
-                    worldCol: {
-                        ...mapCol0,
-                        position: {
-                            x: mapCol0.position.x,
-                            y: mapCol0.position.y + 3
-                        }
-                    }
-                })
-            ) {
-                moving = false
-                break
-            }
+   const xOffset = keys.a.pressed && lastKey === 'a' 
+   ? 3 : keys.d.pressed && lastKey === 'd' ? -3 : 0
+   const yOffset = keys.w.pressed && lastKey === 'w' 
+   ? 3 : keys.s.pressed && lastKey === 's' ? -3 : 0
+
+   const moving = mapCols0.some(worldCol => collide({
+    charCol: mainChar,
+    worldCol: {
+        ...mapCols0,
+        position: {
+            x: mapCol0.position.x + xOffset,
+            y: mapCol0.position.y + yOffset
         }
-    
-
-        if (moving)
-            movements.forEach ((movement) => {
-                movement.position.y += 3
-            })
-    }   else if (keys.a.pressed && lastKey === 'a') {
-        for (let i = 0; i < mapCols0.length; i++) {
-            const mapCol0 = mapCols0[i]
-            if (
-                pcollision({
-                    charCol: mainChar,
-                    worldCol: {
-                        ...mapCol0,
-                        position: {
-                            x: mapCol0.position.x + 3,
-                            y: mapCol0.position.y
-                        }
-                    }
-                })
-            ) {
-                moving = false
-                break
-            }
-        }
-    
-
-        if (moving)
-            movements.forEach ((movement) => {
-                movement.position.x += 3
-            })
-
-    }  else if (keys.s.pressed && lastKey === 's') {
-        for (let i = 0; i < mapCols0.length; i++) {
-            const mapCol0 = mapCols0[i]
-            if (
-                pcollision({
-                    charCol: mainChar,
-                    worldCol: {
-                        ...mapCol0,
-                        position: {
-                            x: mapCol0.position.x,
-                            y: mapCol0.position.y - 3
-                        }
-                    }
-                })
-            )   {
-                moving = false
-                break
-            }
-        }
-    
-        if (moving)
-            movements.forEach((movement) => { 
-                movement.position.y -= 3
-            })
-    }   else if (keys.d.pressed && lastKey === 'd') {
-        for (let i = 0; i < mapCols0.length; i++) {
-            const mapCol0 = mapCols0[i]
-            if (
-                pcollision({
-                    charCol: mainChar,
-                    worldCol: {
-                        ...mapCol0,
-                        position: {
-                            x: mapCol0.position.x - 3,
-                            y: mapCol0.position.y 
-                        }
-                    }
-                })
-            ) {
-                moving = false
-                break
-            }
-        }
-    
-        if (moving)
-        movements.forEach ((movement) => {
-            movement.position.x -= 3
-        })
     }
+   }))
+
+   if (moving)
+   movements.forEach ((movement) =>{
+    movement.position.y += 3
+   })
 }
 animate()
 
