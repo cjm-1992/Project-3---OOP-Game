@@ -1,0 +1,10 @@
+body{
+    background-color: black;
+}
+
+
+.control {
+display: block;
+position: absolute;
+margin-top: 100px;
+}
