@@ -10,22 +10,6 @@ for (let i = 0; i < room0Col.length; i += 30) {
     room0ColMap.push(room0Col.slice(i, 30 + i))
 }
 
-/*Class built for collision boundaries -- PLACE IN CLASS.JS ON COMPLETION 
-class Boundary {
-    static width = 64
-    static height = 64
-    constructor({ position }) {
-        this.position = position
-        this.width = 64
-        this.height = 64
-    }
-
-    draw() {
-        cntx.fillStyle = 'rgba, 255, 0, 0, 0'
-        cntx.fillRect(this.position.x, this.position.y, this.width, this.height)
-    }
-}*/
-
 const mapCols0 = []
 const imgOffset = {
     x: -448,
@@ -33,9 +17,13 @@ const imgOffset = {
 }
 
 //Room 0 Collision Boundaries (Copy for following rooms)
+
+//loop through each row
 room0ColMap.forEach((row, i) => {
+    //loop through each symbol in the row
     row.forEach((symbol, j) => {
-        if (symbol === 145)
+        
+        if (symbol === 145) {
             mapCols0.push(
                 new Boundary ({
                     position: {
@@ -44,7 +32,7 @@ room0ColMap.forEach((row, i) => {
                     }
                 })
             )
-
+        }
     })
 })
 
@@ -55,37 +43,6 @@ room0bkgrnd.src = './img/roomMaps/room0.png'
 //Sprite images (COME BACK TO THIS TO ANIMATE MOVEMENT)
 const playerSprite = new Image()
 playerSprite.src = './img/playerSprite/playerDown.png'
-
-/*Class built for Backgrounds + Playable character
-class Sprite {
-    constructor({
-        position,
-        image,
-        frames = { max: 1 }
-    }) {
-        this.position = position
-        this.image = image
-        this.frames = frames
-        this.image.load = () => {
-            this.width = this.image.width / this.frames.max
-            this.height = this.image.height
-        }
-    }
-
-    draw() {
-        cntx.drawImage(
-            this.image,
-            0,
-            0,
-            this.image.width / this.frames.max,
-            this.image.height,
-            this.position.x,
-            this.position.y,
-            this.image.width / this.frames.max,
-            this.image.height
-        )
-    }
-}*/
 
 //Playable Character loaded
 const mainChar = new Loadables({
@@ -121,7 +78,11 @@ const keys = {
     },
     d: {
         pressed: false
+    },
+    t: {
+        pressed: false
     }
+
 }
 
 //Moveable items 
@@ -132,12 +93,29 @@ const movements = [
 
 //Collision logic -- incomplete
 function collide({ charCol, worldCol }) {
-    return (
-        charCol.position.x + charCol.width >= worldCol.position.x &&
+
+    // if()
+    // console.log('charWidth:', charCol.width,charCol.height, 'charLocation:', charCol.position.x, charCol.position.y ,"ColissionLocation:", worldCol.position.x, worldCol.position.y)
+    console.log('charCol:', charCol, 'charLocation:', charCol.position.x, charCol.position.y ,"ColissionLocation:", worldCol.position.x, worldCol.position.y)
+
+    //
+
+    // console.log(charCol.position, worldCol.position)\
+
+    //If character position x(488) + charWidth 
+    // var if1 = charCol.position.x + charCol.width >= worldCol.position.x;
+    // var if2 = charCol.position.x <= worldCol.position.x + worldCol.width
+    // var if3 = charCol.position.y <= worldCol.position.y + worldCol.height 
+    // var if4 = charCol.position.y + charCol.height >= worldCol.position.y;
+
+    // console.log({if1},{if2},{if3},{if4})
+    var collideStatus = charCol.position.x + charCol.width >= worldCol.position.x &&
         charCol.position.x <= worldCol.position.x + worldCol.width &&
         charCol.position.y <= worldCol.position.y + worldCol.height &&
         charCol.position.y + charCol.height >= worldCol.position.y
-    )
+    // console.log(collideStatus)a
+    return (collideStatus)
+
 }
 
 //Animation loop
@@ -150,6 +128,7 @@ function animate() {
     mainChar.draw()
 
     let moving = true
+
     if (keys.w.pressed && lastKey === 'w') {
         for (let i = 0; i < mapCols0.length; i++) {
             const mapCol0 = mapCols0[i]
@@ -160,7 +139,7 @@ function animate() {
                         ...mapCol0,
                         position: {
                             x: mapCol0.position.x,
-                            y: mapCol0.position.x + 3
+                            y: mapCol0.position.y + 3
                         }
                     }
                 })
@@ -222,8 +201,15 @@ function animate() {
                 movement.position.y -= 3
             })
     } else if (keys.d.pressed && lastKey === 'd') {
+        //When someone presses the D key they move right
+
+        //Check if they runinto a collision
+
+        //Loop trough ALL colission objects
+        console.groupCollapsed('Player has moved:')
         for (let i = 0; i < mapCols0.length; i++) {
             const mapCol0 = mapCols0[i]
+            //check if Current colission object is the same as the player location
             if (
                 collide({
                     charCol: mainChar,
@@ -240,6 +226,7 @@ function animate() {
                 break
             }
         }
+        console.groupEnd('Player has moved:');
         if (moving)
             movements.forEach((movement) => {
                 movement.position.x -= 3
@@ -267,6 +254,10 @@ window.addEventListener('keydown', (e) => {
             keys.d.pressed = true
             lastKey = 'd'
             break
+        case 't':
+            keys.t.pressed = true
+            lastKey = 't'
+            break
     }
 })
 
@@ -283,6 +274,9 @@ window.addEventListener('keyup', (e) => {
             break
         case 'd':
             keys.d.pressed = false
+            break
+        case 't':
+            keys.t.pressed = false
             break
     }
 })
