@@ -1,3 +1,13 @@
+// FAILED CODING -- CODING FOR TTHE WHOLE WORKED, HOWEVER RAN INTO ISSUES WHEN
+// MOVING INTO NEXT ROOM (LINES 16-19, 47-59, 138-159). AFTER DRIVING MYSELF CRAZY
+// FOR A WEEK, I DECIDED TO HAND THIS IN INCOMPLETE TO SHOW A "DONT TRY TO DO SHIT
+// YOU DONT NECESSARILY UNDERSTAND AND END UP FALLING BEHIND WITH OTHER PROJECTS
+// BECAUSE YOUR ADHD BRAIN WONT LET YOU MOVE ONTO THE NEXT PROJECT BEFORE MAKING YOUR
+// BRAIN BLEED".
+// THAT SAID, I LEARNED SOME PRETTY NEAT TRICKS HERE, NAMELY SLICING ARRAYS AND 
+// INDEXING THEM TO ENSURE LOAD SPEEDS ARE SNAPPY WHEN LOOKING FOR SPECIFIC TOKENS
+// AND HOW TO BREAK MY WILL COMPLETELY/GAIN THE PATIENCE OF A GOD. 
+
 const canvas = document.querySelector("canvas");
 const cntx = canvas.getContext("2d");
 
@@ -8,6 +18,11 @@ canvas.height = 576;
 const room0ColMap = [];
 for (let i = 0; i < room0Col.length; i += 30) {
   room0ColMap.push(room0Col.slice(i, 30 + i));
+}
+
+const room0ExitEntranceMap = []
+for (let i = 0; i < ZoneInOut0Data.length; i += 30) {
+    room0ExitEntranceMap.push(ZoneInOut0Data.slice(i, 30 + i))
 }
 
 const mapCols0 = [];
@@ -23,6 +38,24 @@ room0ColMap.forEach((row, i) => {
   row.forEach((symbol, j) => {
     if (symbol === 145) {
       mapCols0.push(
+        new Boundary({
+          position: {
+            x: j * Boundary.width + imgOffset.x,
+            y: i * Boundary.height + imgOffset.y,
+          }
+        })
+      )
+    }
+  })
+})
+
+const room0ExitEntrances = []
+
+room0ExitEntranceMap.forEach((row, i) => {
+  //loop through each symbol in the row
+  row.forEach((symbol, j) => {
+    if (symbol === 124) {
+      room0ExitEntrances.push(
         new Boundary({
           position: {
             x: j * Boundary.width + imgOffset.x,
@@ -80,7 +113,7 @@ const keys = {
 };
 
 //Moveable items
-const movements = [background, ...mapCols0];
+const movements = [background, ...mapCols0, ...room0ExitEntrances];
 
 //Collision logic -- incomplete
 function collide({ charCol, worldCol }) {
@@ -92,6 +125,10 @@ function collide({ charCol, worldCol }) {
   return collideStatus;
 }
 
+const roomChange = {
+  initiated: false
+}
+
 //Animation loop
 function animate() {
   window.requestAnimationFrame(animate)
@@ -100,8 +137,34 @@ function animate() {
   mapCols0.forEach((mapCol0) => {
     mapCol0.draw()
   })
+  room0ExitEntrances.forEach ((room0ExitEntrance) => {
+    room0ExitEntrance.draw()
+  })
   mainChar.draw()
 
+  if (room.change) return 
+  // CHANGE ROOM COLLISION -- ENDED UP BREAKING MOVEMENT 
+  //(IF YOU REMOVE THIS, MOVEMENT WORKS)
+  // IDEA WAS FOR THIS COLLISION TO ZONE INTO NEXT ROOM WHEN INTERACTING WITH LINES 
+  // 42-59
+  if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed) {
+    for (let i = 0; i < room0ExitEntrances.length; i++) {
+      const room0ExitEntrance = room0ExitEntrances[i];
+      if (
+        collide({
+          charCol: mainChar,
+          worldCol: room0ExitEntrance
+        })
+      ) {
+        room.change = true
+        break;
+      }
+    }
+  }
+  
+ //if (keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed){}
+ // TRIED TO APPLY ABOVE LOGIC TO THE BELOW CODE -- WASNT ABLE TO WORK OUT LOGIC FOR 
+ // POSITION DUE TO VARIABLE position.x/.y +/- 3
   let moving = true;
   if (keys.w.pressed && lastKey === "w") {
     for (let i = 0; i < mapCols0.length; i++) {
@@ -122,7 +185,6 @@ function animate() {
         break;
       }
     }
-
     if (moving)
       movements.forEach((movement) => {
         movement.position.y += 3;
